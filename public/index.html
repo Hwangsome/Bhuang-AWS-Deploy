@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AWS Elastic Beanstalk Node.js 演示</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #232f3e;
+            --secondary-color: #ff9900;
+            --accent-color: #00a1c9;
+            --success-color: #3eb489;
+            --background-gradient: linear-gradient(120deg, #f0f7ff, #e6f3ff);
+        }
+        
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background-gradient);
+            color: #333;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        .particles-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            padding: 1rem;
+            font-size: 2.5rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(35, 47, 62, 0.8) 0%, rgba(0, 161, 201, 0.4) 100%);
+            z-index: 1;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-top: 5px solid var(--secondary-color);
+        }
+        
+        .card h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .card-glow {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(255, 153, 0, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .congrats-message {
+            font-size: 1.2rem;
+            color: var(--success-color);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .congrats-message i {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .info-card {
+            flex: 1;
+            min-width: 250px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .info-card h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-card h3 i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+        
+        .aws-cloud-container {
+            position: relative;
+            margin: 3rem 0;
+            height: 200px;
+            background: linear-gradient(180deg, #e6f3ff 0%, #ffffff 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .aws-cloud {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        .cloud-center {
+            width: 100px;
+            height: 100px;
+            background: #ff9900;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 25px;
+            box-shadow: 0 0 40px rgba(255, 153, 0, 0.6);
+            z-index: 2;
+        }
+        
+        .cloud-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 3;
+        }
+        
+        .cloud-large {
+            width: 180px;
+            height: 180px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%);
+            opacity: 0.9;
+            z-index: 1;
+        }
+        
+        .cloud-medium {
+            width: 140px;
+            height: 140px;
+            top: 70%;
+            left: 40%;
+            transform: translate(-50%, -50%);
+            opacity: 0.8;
+            z-index: 1;
+        }
+        
+        .cloud-small {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            left: 65%;
+            transform: translate(-50%, -50%);
+            opacity: 0.7;
+            z-index: 1;
+        }
+        
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            opacity: 0.2;
+            animation: float-up 10s linear infinite;
+        }
+        
+        .status-ticker {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-ticker .status-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--success-color);
+            border-radius: 50%;
+            margin-right: 10px;
+            position: relative;
+        }
+        
+        .status-ticker .status-dot::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .weather-widget {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .weather-widget h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .weather-widget h3 i {
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+        
+        .current-weather {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .weather-icon {
+            font-size: 3rem;
+            color: var(--secondary-color);
+            margin-right: 15px;
+        }
+        
+        .weather-temp {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .deployment-status {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .status-icon::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            opacity: 0.5;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-item.active .status-icon {
+            background: var(--success-color);
+        }
+        
+        .status-item.active .status-icon::after {
+            border-color: var(--success-color);
+        }
+        
+        .status-text {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .status-subtext {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            text-align: center;
+            margin: 3rem 0 1rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0% {
+                transform: translate(-50%, -52%);
+            }
+            50% {
+                transform: translate(-50%, -48%);
+            }
+            100% {
+                transform: translate(-50%, -52%);
+            }
+        }
+        
+        @keyframes float-up {
+            0% {
+                transform: translateY(100%);
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            70% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .info-row {
+                flex-direction: column;
+            }
+            
+            .deployment-status {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .status-item {
+                flex-direction: row;
+                justify-content: flex-start;
+                text-align: left;
+                gap: 15px;
+            }
+            
+            .status-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <div class="particles-background" id="particles-js"></div>
+    
+    <!-- 页面头部 -->
+    <header class="header">
+        <div class="header-animation"></div>
+        <h1>AWS Elastic Beanstalk Node.js 部署</h1>
+    </header>
+    
+    <div class="container">
+        <!-- 状态指示器 -->
+        <div class="status-ticker">
+            <span class="status-dot"></span>
+            应用程序已成功部署并正在运行
+        </div>
+        
+        <!-- 主卡片 -->
+        <div class="card">
+            <div class="card-glow"></div>
+            <h2><i class="fas fa-rocket"></i> 部署成功！</h2>
+            <div class="congrats-message">
+                <i class="fas fa-check-circle"></i>
+                恭喜！您的Node.js应用程序已成功部署到AWS Elastic Beanstalk。
+            </div>
+            
+            <!-- AWS云动画 -->
+            <div class="aws-cloud-container">
+                <div class="aws-cloud">
+                    <div class="cloud cloud-large"></div>
+                    <div class="cloud cloud-medium"></div>
+                    <div class="cloud cloud-small"></div>
+                    <div class="cloud-center"></div>
+                    <div class="cloud-text">AWS</div>
+                </div>
+                <div class="floating-particles" id="floating-particles"></div>
+            </div>
+            
+            <!-- 信息行 -->
+            <div class="info-row">
+                <div class="info-card">
+                    <h3><i class="fas fa-clock"></i> 系统信息</h3>
+                    <p>当前时间: <span id="current-time"></span></p>
+                    <p>服务器状态: <span class="server-status">在线</span></p>
+                    <p>运行环境: Node.js on AWS Elastic Beanstalk</p>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-server"></i> 部署详情</h3>
+                    <p>部署ID: EB-<span id="deployment-id">2025XXXXXXXXXX</span></p>
+                    <p>部署区域: <span id="deployment-region">us-west-2</span></p>
+                    <p>应用版本: <span id="app-version">1.0.0</span></p>
+                </div>
+            </div>
+            
+            <!-- 天气小组件 -->
+            <div class="weather-widget">
+                <h3><i class="fas fa-cloud-sun"></i> AWS 云上的天气</h3>
+                <div class="current-weather">
+                    <div class="weather-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="weather-temp">28°C</div>
+                </div>
+                <p>今天 AWS 云上晴空万里，适合所有云服务！</p>
+            </div>
+            
+            <!-- 部署状态 -->
+            <div class="deployment-status">
+                <div class="status-item active">
+                    <div class="status-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div>
+                        <div class="status-text">代码上传</div>
+                        <div class="status-subtext">代码已成功上传到AWS</div>
+                    </div>
+                </div>
+                
+                <div class="status-item active">
+                    <div class="status-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div>
+                        <div class="status-text">环境配置</div>
+                        <div class="status-subtext">环境已按需求配置</div>
+                    </div>
+                </div>
+                
+                <div class="status-item active">
+                    <div class="status-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <div class="status-text">应用部署</div>
+                        <div class="status-subtext">应用已成功部署</div>
+                    </div>
+                </div>
+                
+                <div class="status-item active">
+                    <div class="status-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div>
+                        <div class="status-text">公开可访问</div>
+                        <div class="status-subtext">应用已在线并可访问</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        &copy; 2025 AWS Elastic Beanstalk 演示 | 使用 <a href="https://aws.amazon.com/elasticbeanstalk/" target="_blank">AWS Elastic Beanstalk</a> 构建
+    </footer>
+
+    <!-- 粒子库 -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // 当前时间更新
+        function updateTime() {
+            document.getElementById('current-time').textContent = new Date().toLocaleString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // 生成随机部署ID
+        document.getElementById('deployment-id').textContent = '2025' + Math.floor(Math.random() * 1000000000).toString().padStart(10, '0');
+        
+        // 粒子背景配置
+        particlesJS("particles-js", {
+            particles: {
+                number: {
+                    value: 50,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: "#00a1c9"
+                },
+                shape: {
+                    type: "circle"
+                },
+                opacity: {
+                    value: 0.5,
+                    random: true
+                },
+                size: {
+                    value: 3,
+                    random: true
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#00a1c9",
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: "none",
+                    random: true,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: "grab"
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: "push"
+                    },
+                    resize: true
+                },
+                modes: {
+                    grab: {
+                        distance: 140,
+                        line_linked: {
+                            opacity: 0.5
+                        }
+                    },
+                    push: {
+                        particles_nb: 3
+                    }
+                }
+            },
+            retina_detect: true
+        });
+        
+        // 创建浮动粒子
+        function createFloatingParticles() {
+            const container = document.getElementById('floating-particles');
+            const containerWidth = container.offsetWidth;
+            const numParticles = 20;
+            
+            for (let i = 0; i < numParticles; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = `${Math.random() * containerWidth}px`;
+                particle.style.animationDuration = `${5 + Math.random() * 10}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                particle.style.width = `${3 + Math.random() * 7}px`;
+                particle.style.height = particle.style.width;
+                particle.style.opacity = `${0.1 + Math.random() * 0.3}`;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // 当文档加载完成后创建粒子
+        document.addEventListener('DOMContentLoaded', function() {
+            createFloatingParticles();
+            
+            // 设置区域和版本（随机选择区域）
+            const regions = ['us-west-2', 'us-east-1', 'ap-northeast-1', 'eu-central-1', 'ap-southeast-2'];
+            document.getElementById('deployment-region').textContent = regions[Math.floor(Math.random() * regions.length)];
+        });
+    </script>
+</body>
+</html>
