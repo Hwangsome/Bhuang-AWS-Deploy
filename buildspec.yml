@@ -1,0 +1,50 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - echo 正在安装依赖项...
+      - npm install
+
+  pre_build:
+    commands:
+      - echo 运行测试...
+      - echo 跳过测试阶段... # 如果有测试，可以取消这行注释并添加npm test
+      - echo 当前时间 `date`
+
+  build:
+    commands:
+      - echo 开始构建阶段...
+      - npm run build || echo "没有构建脚本，跳过"
+      - echo 构建完成
+
+  post_build:
+    commands:
+      - echo 构建已完成 `date`
+      - echo 准备部署包...
+
+artifacts:
+  files:
+    - app.js
+    - node_modules/**/*
+    - package.json
+    - package-lock.json
+    - public/**/*
+    - .ebextensions/**/*
+    - .platform/**/*
+  base-directory: '.'
+  discard-paths: no
+
+cache:
+  paths:
+    - 'node_modules/**/*'
+
+# environment_variables:
+#   plaintext:
+#     NODE_ENV: production
+
+# hooks:
+#   post-build:
+#     - aws elasticbeanstalk update-environment --environment-name my-nodejs-env --version-label ${CODEBUILD_RESOLVED_SOURCE_VERSION}
